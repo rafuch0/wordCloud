@@ -1,0 +1,169 @@
+<html>
+<head>
+	<script>
+		var wordCloudData = {};
+
+		function sortByRandom()
+		{
+			return 0.5 - Math.random();
+		}
+
+		function sortByCount(a, b)
+		{
+			if(wordCloudData[a] == wordCloudData[b]) return 0;
+			if(wordCloudData[a] > wordCloudData[b]) return 1;
+			return -1;
+		}
+
+		function addWord(word)
+		{
+			if(wordCloudData[word]) wordCloudData[word]++;
+			else wordCloudData[word] = 1;
+		}
+
+		function addRandomWord(wordList)
+		{
+			if(wordList)
+			{
+				var rand = Math.floor(Math.random() * wordList.length);
+				addWord(wordList[rand]);
+			}
+			else
+			{
+				addWord('ASDF'+parseInt((Math.random()*100)%50, 8)+':JKL;');
+			}
+		}
+
+		function showWords(target, words)
+		{
+			var testtext = '';
+			words.forEach(function(element, index, array)
+			{
+				testtext += ' *'+element.count+'<span style="font-size: '+element.size+'; color: rgb('+element.colorR+', '+element.colorG+', '+element.colorB+');">'+element.word+'</span>* ';
+			});
+			document.getElementById(target).innerHTML = testtext;
+		}
+
+		function makeWordCloud(wordLimit, randomize)
+		{
+			var uniqueWords = Object.keys(wordCloudData);
+
+			if(randomize)
+			{
+				uniqueWords.sort(sortByRandom);
+			}
+
+			var slice1 = uniqueWords.slice(0, Math.floor(uniqueWords.length / 2));
+			var slice2 = uniqueWords.slice(Math.floor(uniqueWords.length / 2));
+
+			slice1.sort(sortByCount);
+			slice2.sort(sortByCount);
+
+			slice1 = slice1.slice(-1*Math.floor(wordLimit / 2));
+			slice2 = slice2.slice(-1*Math.floor(wordLimit / 2));
+
+			slice2.reverse();
+
+			var slice1min = 0;
+			var slice1max = slice1.length - 1;
+			var slice2min = slice2.length - 1;
+			var slice2max = 0;
+
+			var maxCount = (wordCloudData[slice1[slice1max]] > wordCloudData[slice2[slice2max]])?wordCloudData[slice1[slice1max]]:wordCloudData[slice2[slice2max]];
+			var minCount = (wordCloudData[slice1[slice1min]] < wordCloudData[slice2[slice2min]])?wordCloudData[slice1[slice1min]]:wordCloudData[slice2[slice2min]];
+
+			uniqueWords = (new Array).concat(slice1, slice2);
+
+			uniqueWords.forEach(function(element, index, array)
+			{
+				var size;
+				size = Math.floor(wordCloudData[element]/(maxCount + minCount * 2) * 32 + 8);
+				size = (size > 40)?40:size;
+				size = (size < 8)?8:size;
+
+				var color = {};
+				color.r = Math.floor(255*size/40);
+				color.g = 255 - color.r;
+				color.b = 255 - color.r;
+
+				uniqueWords[index] = { word: element, count: wordCloudData[element], size: size, colorR: color.r, colorG: color.g, colorB: color.b };
+			});
+
+			return uniqueWords;
+		}
+
+		function tempInit()
+		{
+			for(var i = 0; i < 30; i++)
+			{
+				addRandomWord([ 'asdf', 'jkl;', 'mqpe', '34md', 'zzqf', 'oei0', 'jdij', 'a3ko', '3k9z' ]);
+			}
+
+			setInterval(function()
+			{
+				if(sortByRandom() < -0.10)
+				{
+					addRandomWord();
+					showWords('wordCloudSpan', makeWordCloud(1000, false));
+				}
+				else if(sortByRandom() < -0.05)
+				{
+					addRandomWord([ 'asdf'+parseInt((Math.random()*100)%50, 8), 'jkl;'+parseInt((Math.random()*100)%50, 8), 'mqpe'+parseInt((Math.random()*100)%50, 8), '34md'+parseInt((Math.random()*100)%50, 8), 'zzqf'+parseInt((Math.random()*100)%50, 8), 'oei0'+parseInt((Math.random()*100)%50, 8), 'jdij'+parseInt((Math.random()*100)%50, 8), 'a3ko'+parseInt((Math.random()*100)%50, 8), '3k9z'+parseInt((Math.random()*100)%50, 8) ]);
+					showWords('wordCloudSpan', makeWordCloud(1000, false));
+				}
+
+			}, 100);
+		}
+	</script>
+
+	<style>
+		body
+		{
+			background-color: black;
+		}
+
+		#wordCloudWrapper
+		{
+			display: table;
+		}
+
+		#wordCloudDiv
+		{
+			width: 300px;
+			height: 300px;
+
+			background-color: red;
+
+			display: table-cell;
+			vertical-align: middle;
+			text-align: center;
+		}
+
+		#wordCloudSpan
+		{
+			display: table-row;
+			max-height: 50%;
+			max-width: 50%;
+			left: 50%;
+			bottom: -50%;
+			background-color: blue;
+			overflow: hidden;
+			white-space: wrap;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="wordCloudWrapper">
+		<div id="wordCloudDiv">
+			<span id="wordCloudSpan">
+			</span>
+		</div>
+	</div>
+
+
+	<script>
+		tempInit();
+	</script>
+</body>
+</html>
